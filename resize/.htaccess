@@ -1,0 +1,8 @@
+# Сжатие изображение от IKSWEB.ru
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !/resize/iksweb.php$
+RewriteRule ^(.*)$ /resize/iksweb.php [L]
+RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
