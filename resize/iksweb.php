@@ -24,45 +24,43 @@ You can change the user settings for the individual operation of the script
 
 */
 $arParams = array(
-	// default
-	'ROOT'	=> __DIR__, // Site ROOT DIR
-	'PAGE'	=> $APPLICATION->GetCurPage(), // Page URL
-	'QUERU' => $APPLICATION->GetCurPageParam(), // Page URL Query
-	'SOURCE'=> $APPLICATION->GetCurSource(),// The source image
-	
-	
-	// User Settings
-	'SAVE_DIR' => '/images/', // Folder to save image resizes to (Relative to the main folder)
-	'SHOW_STUB' => 'Y', // Y / N - Display the stub when there is no image
-	);
-	
+    // default
+    'ROOT'	=> __DIR__, // Site ROOT DIR
+    'PAGE'	=> $APPLICATION->GetCurPage(), // Page URL
+    'QUERU' => $APPLICATION->GetCurPageParam(), // Page URL Query
+    'SOURCE'=> $APPLICATION->GetCurSource(),// The source image
+
+    // User Settings
+    'SAVE_DIR' => '/images/', // Folder to save image resizes to (Relative to the main folder)
+    'SHOW_STUB' => 'Y', // Y / N - Display the stub when there is no image
+);
+
 $arParams['IMAGES_PARAMS'] = $APPLICATION->GetResizeParams();
 
 $arParams['FILE_DIR'] = $arParams['ROOT'].$arParams['SAVE_DIR'].$arParams['IMAGES_PARAMS']['FILE_RESIZE_NAME'];
 
 // Show images
 if (file_exists($arParams['FILE_DIR'])) {
-	
-	// Set 200
-	http_response_code(200);
-	
-	$APPLICATION->load($arParams['FILE_DIR']);
-	$APPLICATION->resize($arParams['IMAGES_PARAMS']['WIDTH'], $arParams['IMAGES_PARAMS']['HEIGHT']);
-	$APPLICATION->output();
-	
+
+    // Set 200
+    http_response_code(200);
+
+    $APPLICATION->load($arParams['FILE_DIR']);
+    $APPLICATION->resize($arParams['IMAGES_PARAMS']['WIDTH'], $arParams['IMAGES_PARAMS']['HEIGHT']);
+    $APPLICATION->output();
+
 }else{
-	
-	// Set 404
-	http_response_code(404);
-	
-	$APPLICATION->save( $arParams['SOURCE'] , $arParams['FILE_DIR'] );
-	
-	// We output the absence of an image
-	if($arParams['SHOW_STUB']=='Y'){
-		$APPLICATION->load($arParams['ROOT'].'/include/no-image.png');
-		$APPLICATION->resize($arParams['IMAGES_PARAMS']['WIDTH'], $arParams['IMAGES_PARAMS']['HEIGHT']);
-	    $APPLICATION->output();
-	}
-	
+
+    // Set 404
+    http_response_code(404);
+
+    $APPLICATION->save( $arParams['SOURCE'].$arParams['QUERU'] , $arParams['FILE_DIR'] );
+
+    // We output the absence of an image
+    if($arParams['SHOW_STUB']=='Y'){
+        $APPLICATION->load($arParams['ROOT'].'/include/no-image.png');
+        $APPLICATION->resize($arParams['IMAGES_PARAMS']['WIDTH'], $arParams['IMAGES_PARAMS']['HEIGHT']);
+        $APPLICATION->output();
+    }
 }
 ?>
