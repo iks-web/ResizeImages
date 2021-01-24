@@ -16,11 +16,11 @@ The script will quickly change the size of any image formats from external sites
 
 * https://site.com/resize/800x800/https://yoursite.com/images.png?photo=226187977&key=839285
 
-# Development logs
-
-0.3 - In the development
-0.2 - Added a function for getting images with GET parameters
-0.1 - Create script
+# Development logs  
+  
+0.3 - In the development  
+0.2 - Added a function for getting images with GET parameters  
+0.1 - Create script  
 
 
 
