@@ -1,14 +1,15 @@
-# Resizing images by link  
+# Изменение размера изображений по ссылке 
   
 Author: Sergey Knyazew  
 Author site: http://iksweb.ru/  
 Author E-mail: info@iksweb.ru  
 PHP: 7.4 >  
+Tested PHP 8.0
 
-# Description  
-The script will quickly change the size of any image formats from external sites and save photos to your site.  
+# Описание  
+Скрипт быстро изменит размер любых форматов изображений с внешних сайтов и сохранит фотографии на вашем сайте.
 
-# Using
+# Использование
 
 * https://site.com/[dir]]/[size]]/[link]  
 
@@ -18,9 +19,7 @@ The script will quickly change the size of any image formats from external sites
 
 # Development logs  
   
-0.3 - In the development  
-0.2 - Added a function for getting images with GET parameters  
-0.1 - Create script  
-
-
+0.3 - Переписан код для php 8.0/ Улучшена скорость обработки 
+0.2 - Добавлена функция для получения изображений с параметрами GET  
+0.1 - init
 
