@@ -7,13 +7,29 @@
 * Author E-mail: info@iksweb.ru
 */
 
-$APPLICATION = new Application;
-
-class Application{
+class ResizeImages{
 
     /* var */
     var $image;
     var $image_type;
+
+    /* private */
+    public $arParams = [];
+
+    /* Init Class  */
+    public function __construct()
+    {
+
+        // default params
+        $this->arParams = array(
+            'ROOT'			=> $_SERVER['DOCUMENT_ROOT'], // Site ROOT DIR
+            'PAGE'			=> $this->GetCurPage(), // Page URL
+            'QUERU' 		=> $this->GetCurPageParam(), // Page URL Query
+            'SOURCE'		=> $this->GetCurSource(),// The source image
+            'IMAGES_PARAMS' => $this->GetResizeParams(),
+        );
+
+    }
 
     /*
     Clearing the page URL
@@ -21,7 +37,7 @@ class Application{
     @param true/false show get params
     @return string $url
     */
-    function GetCurPage($no_get=false)
+    private function GetCurPage($no_get=false)
     {
 
         $url = preg_replace('/[^\/\?\&\=\-\:а-яА-Яa-zA-Z0-9\.\w]+/iu', '', $_SERVER['REQUEST_URI']);
@@ -38,7 +54,7 @@ class Application{
     @param N/A
     @return string $url
     */
-    function GetCurPageParam()
+    private function GetCurPageParam()
     {
         $url  =  $this->GetCurPage();
         $urlParts  =  explode("?", $url, 2);
@@ -57,11 +73,11 @@ class Application{
 
     /*
     Creating an array with the resize settings
-   
+
     @param N/A
     @return array $arResult
    */
-    function GetResizeParams()
+    private function GetResizeParams()
     {
         global $arParams;
 
@@ -96,10 +112,9 @@ class Application{
 
         }
 
-        $arResult['FILE_RESIZE_NAME'] = md5($arResult['FILE_NAME'].$arParams['SOURCE']).'.'.$arResult['FILE_TYPE'];
+        $arResult['FILE_RESIZE_NAME'] = md5($arResult['FILE_NAME'].$arResult['SIZE']).'.'.$arResult['FILE_TYPE'];
 
         return $arResult;
-
     }
 
     /*
@@ -108,9 +123,8 @@ class Application{
     @param N/A
     @return array $matches
    */
-    function GetCurSource()
+    private function GetCurSource()
     {
-
         $url  =  $this->GetCurPage();
 
         // check ssl
@@ -122,19 +136,55 @@ class Application{
 
         preg_match_all('/(http:\/\/|https:\/\/)?(www)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\--\?\%\&]*)*\/?/i', $url, $matches);
 
-        return $matches[0][0];
+        if(isset($matches[0][0]))
+            return $matches[0][0];
+
+        return false;
+    }
+
+    /*
+    Show Images page
+   */
+    public function ShowImages($filename=false)
+    {
+        $file = !empty($filename)? $filename : $this->arParams['FILE_DIR'];
+        $this->load($file);
+        $this->resize($this->arParams['IMAGES_PARAMS']['WIDTH'], $this->arParams['IMAGES_PARAMS']['HEIGHT']);
+        $this->output();
+    }
+
+    /*
+    Save Images site
+   */
+    public function SaveImages()
+    {
+
+        if(!isset($this->arParams['IMAGES_PARAMS']['FILE_TYPE']))
+            return false;
+
+        $this->save($this->arParams['SOURCE'],$this->arParams['FILE_DIR']);
     }
 
     /*
     Uploading an image to the class
-   
+
     @param string $filename - File name
     @return N/A
    */
-    function load($filename)
+    private function load($filename)
     {
+
         $image_info = getimagesize($filename);
-        $this->image_type = $image_info[2];
+        $this->image_type = !empty($image_info)? $image_info[2] : false;
+
+        if(empty($this->image_type) && $this->arParams['SHOW_STUB']=='Y'){
+
+            $filename = $this->arParams['ROOT'].'/resize/include/no-image.png';
+
+            $image_info = getimagesize($filename);
+            $this->image_type = $image_info[2];
+        }
+
         if( $this->image_type == IMAGETYPE_JPEG ) {
             $this->image = imagecreatefromjpeg($filename);
         } elseif( $this->image_type == IMAGETYPE_GIF ) {
@@ -142,6 +192,7 @@ class Application{
         } elseif( $this->image_type == IMAGETYPE_PNG ) {
             $this->image = imagecreatefrompng($filename);
         }
+
     }
 
     /*
@@ -151,7 +202,7 @@ class Application{
      @param string $save - The directory for saving the image
      @return N/A
     */
-    function save($link,$save)
+    private function save($link,$save)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, 0);
@@ -166,11 +217,11 @@ class Application{
 
     /*
     We display an image on the screen
-   
+
     @param string $image_type - Type images
     @return N/A
    */
-    function output($image_type=IMAGETYPE_JPEG)
+    private function output($image_type=IMAGETYPE_JPEG)
     {
         if( $image_type == IMAGETYPE_JPEG ) {
             imagejpeg($this->image);
@@ -187,7 +238,7 @@ class Application{
      @param N/A
      @return string - width images
     */
-    function getWidth()
+    private function getWidth()
     {
         return imagesx($this->image);
     }
@@ -198,7 +249,7 @@ class Application{
      @param N/A
      @return string - height images
     */
-    function getHeight()
+    private function getHeight()
     {
         return imagesy($this->image);
     }
@@ -209,7 +260,7 @@ class Application{
      @param string - height images
      @return N/A
     */
-    function resizeToHeight($height)
+    private function resizeToHeight($height)
     {
         $ratio = $height / $this->getHeight();
         $width = $this->getWidth() * $ratio;
@@ -218,11 +269,11 @@ class Application{
 
     /*
     Change the size of the photo
-   
+
     @param string - width images
     @return N/A
    */
-    function resizeToWidth($width)
+    private function resizeToWidth($width)
     {
         $ratio = $width / $this->getWidth();
         $height = $this->getheight() * $ratio;
@@ -231,12 +282,12 @@ class Application{
 
     /*
     Change the size of the photo
-    
+
     @param string - width images
     @param string - height images
     @return N/A
    */
-    function resize($width,$height)
+    private function resize($width,$height)
     {
         $new_image = imagecreatetruecolor($width, $height);
         imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
