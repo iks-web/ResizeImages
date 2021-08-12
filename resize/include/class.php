@@ -148,9 +148,9 @@ class ResizeImages{
     public function ShowImages($filename=false)
     {
         $file = !empty($filename)? $filename : $this->arParams['FILE_DIR'];
-        $this->load($file);
-        $this->resize($this->arParams['IMAGES_PARAMS']['WIDTH'], $this->arParams['IMAGES_PARAMS']['HEIGHT']);
-        $this->output();
+        $this->LoadFile($file);
+        $this->ResizeFile($this->arParams['IMAGES_PARAMS']['WIDTH'], $this->arParams['IMAGES_PARAMS']['HEIGHT']);
+        $this->Output();
     }
 
     /*
@@ -162,7 +162,7 @@ class ResizeImages{
         if(!isset($this->arParams['IMAGES_PARAMS']['FILE_TYPE']))
             return false;
 
-        $this->save($this->arParams['SOURCE'],$this->arParams['FILE_DIR']);
+        $this->SaveFile($this->arParams['SOURCE'],$this->arParams['FILE_DIR']);
     }
 
     /*
@@ -171,27 +171,37 @@ class ResizeImages{
     @param string $filename - File name
     @return N/A
    */
-    private function load($filename)
+    private function LoadFile($filename)
     {
 
-        $image_info = getimagesize($filename);
-        $this->image_type = !empty($image_info)? $image_info[2] : false;
+        $this->image_type = pathinfo($filename, PATHINFO_EXTENSION);
 
         if(empty($this->image_type) && $this->arParams['SHOW_STUB']=='Y'){
-
             $filename = $this->arParams['ROOT'].'/resize/include/no-image.png';
-
-            $image_info = getimagesize($filename);
-            $this->image_type = $image_info[2];
+            $this->image_type =  'png';
         }
 
-        if( $this->image_type == IMAGETYPE_JPEG ) {
-            $this->image = imagecreatefromjpeg($filename);
-        } elseif( $this->image_type == IMAGETYPE_GIF ) {
-            $this->image = imagecreatefromgif($filename);
-        } elseif( $this->image_type == IMAGETYPE_PNG ) {
-            $this->image = imagecreatefrompng($filename);
-        }
+	    switch ($this->image_type) {
+	    	case 'png':
+		        $this->image = imagecreatefrompng($filename);
+		        break;
+		    case 'jpg':
+		        $this->image = imagecreatefromjpeg($filename);
+		        break;
+		    case 'jpeg':
+		        $this->image = imagecreatefromjpeg($filename);
+		        break;
+		    case 'gif':
+		        $this->image = imagecreatefromgif($filename);
+		        break;
+		    case 'bmp':
+		        $this->image = imagecreatefrombmp($filename);
+		        break;
+		    case 'webp':
+		         $this->image = imagecreatefromwebp($filename);
+		        break;    
+		}
+        
 
     }
 
@@ -202,7 +212,7 @@ class ResizeImages{
      @param string $save - The directory for saving the image
      @return N/A
     */
-    private function save($link,$save)
+    private function SaveFile($link,$save)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, 0);
@@ -221,15 +231,28 @@ class ResizeImages{
     @param string $image_type - Type images
     @return N/A
    */
-    private function output($image_type=IMAGETYPE_JPEG)
+    private function Output()
     {
-        if( $image_type == IMAGETYPE_JPEG ) {
-            imagejpeg($this->image);
-        } elseif( $image_type == IMAGETYPE_GIF ) {
-            imagegif($this->image);
-        } elseif( $image_type == IMAGETYPE_PNG ) {
-            imagepng($this->image);
-        }
+        switch ($this->image_type) {
+	    	case 'png':
+		        $this->image = imagepng($this->image);
+		        break;
+		    case 'jpg':
+		         $this->image = imagejpeg($this->image);
+		        break;
+		    case 'jpeg':
+		         $this->image = imagejpeg($this->image);
+		        break;
+		    case 'gif':
+		        $this->image = imagegif($this->image);
+		        break;
+		    case 'bmp':
+		        $this->image = imagebmp($filename);
+		        break;
+		    case 'webp':
+		        $this->image = imagewebp($filename);
+		        break;    
+		}
     }
 
     /*
@@ -255,39 +278,13 @@ class ResizeImages{
     }
 
     /*
-     Change the size of the photo
-
-     @param string - height images
-     @return N/A
-    */
-    private function resizeToHeight($height)
-    {
-        $ratio = $height / $this->getHeight();
-        $width = $this->getWidth() * $ratio;
-        $this->resize($width,$height);
-    }
-
-    /*
-    Change the size of the photo
-
-    @param string - width images
-    @return N/A
-   */
-    private function resizeToWidth($width)
-    {
-        $ratio = $width / $this->getWidth();
-        $height = $this->getheight() * $ratio;
-        $this->resize($width,$height);
-    }
-
-    /*
     Change the size of the photo
 
     @param string - width images
     @param string - height images
     @return N/A
    */
-    private function resize($width,$height)
+    private function ResizeFile($width,$height)
     {
         $new_image = imagecreatetruecolor($width, $height);
         imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
